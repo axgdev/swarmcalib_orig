@@ -8,6 +8,8 @@ from ivy.std_api import *
 comm=IvyCalibrationNode()
 comm.IvyInitStart()
 
+"""
+
 #dostuff
 comm.IvySendUnKill(6)
 #comm.IvySendCalib(5,58,0.5)
@@ -21,5 +23,8 @@ comm.IvySendSwitchBlock(6, 2)
 time.sleep(1)
 comm.IvySendSwitchBlock(6, 4)
 time.sleep(3)
+
+"""
+
 comm.IvySendKill(6)
 comm.IvyInitStop()
