@@ -19,6 +19,7 @@ from geometry_msgs.msg import Pose2D
 #Ivy cal node
 import ivyModules.IvyCalibrationNode
 import math
+import numpy
 
 class Calibrator:
     """Class to calibrate the copter"""
@@ -65,7 +66,9 @@ class Calibrator:
          myObj = self.myIvyCalNode.IvyGetPos()
          self.copterXPos = myObj.x
          self.copterYPos = myObj.y
-         self.copterTheta = myObj.theta
+         self.copterTheta = myObj.theta #+ math.pi/2.0
+         while (self.copterTheta > 2.0*math.pi):
+             self.copterTheta = self.copterTheta - 2.0*math.pi
          print("X: "+str(self.copterXPos) + " Y: "+str(self.copterYPos) + " Theta: " + str(self.copterTheta))
          
     def killCopter(self):
@@ -95,10 +98,10 @@ class Calibrator:
         #Call send roll
         return
         
-    def sendParametersToCopter(self, pitchToSend, rollToSend, yawToSend):
+    def sendParametersToCopter(self, rollToSend, pitchToSend, yawToSend):
         #IvyCalibrationNode.IvySendParams
-        print("Parameters sent")
-        self.myIvyCalNode.IvySendCalParams(self.aircraftID, 0, pitchToSend, rollToSend, yawToSend)
+        print("roll: "+str(rollToSend)+" pitch: "+str(pitchToSend))
+        #self.myIvyCalNode.IvySendCalParams(self.aircraftID, 0, pitchToSend, rollToSend, yawToSend)
         return
         
     def sendYaw(self):
@@ -106,13 +109,20 @@ class Calibrator:
         return
         
     def followTarget(self):
-        errorX = (self.copterXPos - self.baseX)*math.cos(self.copterTheta) #here we put +90 to fix the angle -90 to 270
-        errorY = (self.copterYPos - self.baseY)*math.sin(self.copterTheta)
+        errorX = (self.copterXPos - self.baseX) #here we put +90 to fix the angle -90 to 270
+        errorY = (self.copterYPos - self.baseY)
+        coord = numpy.array([errorX,errorY])
+        translationMatrix = numpy.matrix([[math.cos(self.copterTheta), math.sin(self.copterTheta)], [-math.sin(self.copterTheta), math.cos(self.copterTheta)]])
+        newCoord = numpy.dot(translationMatrix,coord)
+        print(newCoord);
+        errorX = newCoord.toList()[0]
+        errorY = newCoord.toList()[1]
+
         rollToSend = self.targetXController.step(errorX, self.pollingTime)
         pitchToSend = self.targetYController.step(errorY, self.pollingTime)
         #self.sendPitch(pitchToSend)
         #self.sendRoll(rollToSend)
-        self.sendParametersToCopter(pitchToSend, rollToSend, 0)
+        self.sendParametersToCopter(rollToSend, pitchToSend, 0)
         #Save in list constantly
         self.calibrationParameters = [pitchToSend, rollToSend] 
         
@@ -129,12 +139,12 @@ myCalibrator.setBasePosition(0.4,1)
 myCalibrator.setPollingTime(0.5)
 myCalibrator.setAircraftID(6)
 myCalibrator.myIvyCalNode.IvyInitStart()
-myCalibrator.myIvyCalNode.IvySendCalParams(myCalibrator.aircraftID, 0, 0, 0, 0)
-myCalibrator.unkillCopter()
+#myCalibrator.myIvyCalNode.IvySendCalParams(myCalibrator.aircraftID, 0, 0, 0, 0)
+#myCalibrator.unkillCopter()
 time.sleep(3)
-myCalibrator.sendStartMode()
+#myCalibrator.sendStartMode()
 i = 0;
-while(i<=16):
+while(True):
     myCalibrator.getXYCoordinates()
     if (myCalibrator.isInDeadZone()):
         myCalibrator.killCopter()
@@ -143,10 +153,9 @@ while(i<=16):
         myCalibrator.myIvyCalNode.IvyInitStop()
         break;
     myCalibrator.followTarget()
-    i=i+1
     time.sleep(myCalibrator.pollingTime)
     
-myCalibrator.myIvyCalNode.IvySendSwitchBlock(myCalibrator.aircraftID,myCalibrator.landingBlockInteger)
+#myCalibrator.myIvyCalNode.IvySendSwitchBlock(myCalibrator.aircraftID,myCalibrator.landingBlockInteger)
 print("ProgramEnded")
 raise SystemExit()
 
