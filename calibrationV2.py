@@ -27,8 +27,8 @@ class Calibrator:
     
     def __init__(self):
     #Here we can put some default variables for deadzone, targetzone and pollingTime and PID parameters
-        self.targetXController = finkenPID.PIDController(4, 0, 4) #I set it to zero here for zero control
-        self.targetYController = finkenPID.PIDController(4, 0, 4)
+        self.targetXController = finkenPID.PIDController(1, 1, 1) #I set it to zero here for zero control
+        self.targetYController = finkenPID.PIDController(1, 1, 1)
         self.copterXPos = 1 #Just to test
         self.copterYPos = 1 #Just to test
         self.copterTheta = 0;
@@ -118,8 +118,8 @@ class Calibrator:
         errorX = newCoord.item(0)
         errorY = newCoord.item(1)
 
-        rollToSend = self.targetXController.step(errorX, self.pollingTime)
-        pitchToSend = self.targetYController.step(errorY, self.pollingTime)
+        pitchToSend = self.targetXController.step(errorX, self.pollingTime)
+        rollToSend = self.targetYController.step(errorY, self.pollingTime)
         #self.sendPitch(pitchToSend)
         #self.sendRoll(rollToSend)
         self.sendParametersToCopter(rollToSend, pitchToSend, 0)
