@@ -27,8 +27,8 @@ class Calibrator:
     
     def __init__(self):
     #Here we can put some default variables for deadzone, targetzone and pollingTime and PID parameters
-        self.targetXController = finkenPID.PIDController(4, 0.1, 0.1) #I set it to zero here for zero control
-        self.targetYController = finkenPID.PIDController(4, 0.1, 0.1)
+        self.targetXController = finkenPID.PIDController(25, 0, 5) #I set it to zero here for zero control
+        self.targetYController = finkenPID.PIDController(25, 0, 5)
         self.copterXPos = 1 #Just to test
         self.copterYPos = 1 #Just to test
         self.copterTheta = 0;
@@ -116,8 +116,10 @@ class Calibrator:
         errorX = newCoord.item(0)
         errorY = newCoord.item(1)
 
-        rollToSend = self.targetXController.step(errorX, self.pollingTime)
-        pitchToSend = self.targetYController.step(errorY, self.pollingTime)
+        pitchToSend = self.targetXController.step(errorX, self.pollingTime)
+        #rollToSend = self.targetYController.step(errorY, self.pollingTime)
+	#pitchToSend = 0
+	rollToSend = 0
         #self.sendPitch(pitchToSend)
         #self.sendRoll(rollToSend)
         self.sendParametersToCopter(pitchToSend, rollToSend, 0)
@@ -134,7 +136,7 @@ class Calibrator:
 myCalibrator = Calibrator()
 myCalibrator.setDeadZone(-0.2,1.0,-0.1,2.1) #minX, maxX, minY, maxY
 myCalibrator.setBasePosition(0.4,1)
-myCalibrator.setPollingTime(0.25)
+myCalibrator.setPollingTime(0.01)
 myCalibrator.setAircraftID(6)
 myCalibrator.myIvyCalNode.IvyInitStart()
 myCalibrator.myIvyCalNode.IvySendCalParams(myCalibrator.aircraftID, 0, 0, 0, 0)
@@ -142,7 +144,7 @@ myCalibrator.unkillCopter()
 time.sleep(3)
 myCalibrator.sendStartMode()
 i = 0;
-while(i<=32):
+while(i<=1000):
     myCalibrator.getXYCoordinates()
     if (myCalibrator.isInDeadZone()):
         myCalibrator.killCopter()
