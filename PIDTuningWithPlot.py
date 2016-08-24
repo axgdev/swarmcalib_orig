@@ -67,13 +67,13 @@ class Calibrator:
 
     def __init__(self):
     #Here we can put some default variables for deadzone, targetzone and pollingTime and PID parameters
-        self.pParameter = 2.0/100
-        self.iParameter = 1.0/10000000
+        self.pParameter = 10.0/100
+        self.iParameter = 0.0/10000000
         self.dParameter = 0.0
-        self.targetXController = finkenPID.PIDController(self.pParameter, self.iParameter, self.dParameter) #I set it to zero here for zero control
-        self.targetYController = finkenPID.PIDController(self.pParameter, self.iParameter, self.dParameter)
-        self.internalXController = finkenPID.PIDController(0.005, 0.0000001/4, 0)
-        self.internalYController = finkenPID.PIDController(0.005, 0.0000001/4, 0)
+        self.targetXController = finkenPID.PIDController(self.pParameter, self.iParameter, self.dParameter, logger) #I set it to zero here for zero control
+        self.targetYController = finkenPID.PIDController(self.pParameter, self.iParameter, self.dParameter, logger)
+        #self.internalXController = finkenPID.PIDController(0.20, 0, 0)
+        #self.internalYController = finkenPID.PIDController(0.20, 0, 0)
         self.copterXPos = 1 #Just to test
         self.copterYPos = 1 #Just to test
         self.copterTheta = 0;
@@ -298,12 +298,12 @@ logger.debug("XPID = %f, %f, %f / YPID = %f, %f, %f" %
              
 plt.figure(1)
 plt.ion()
-plt.axis([0,1000,-300,300])
+plt.axis([0,200,-300,300])
 plt.title('Roll PID error')
 
 plt.figure(2)
 plt.ion()
-plt.axis([0,1000,-300,300])
+plt.axis([0,200,-300,300])
 plt.title('Pitch PID error')
 
 """ End of debug log initial messages """
@@ -313,7 +313,7 @@ myCalibrator.sendParametersToCopter(0, 0, 0) #We make sure pitch, roll and yaw a
 myCalibrator.unkillCopter()
 time.sleep(3) #For the camera to detect the initial position
 myCalibrator.sendStartMode() #I uncommented this for simulation purposes
-time.sleep(1.75) #When the copter turns on, there are no lights until a few seconds
+time.sleep(0.5) #When the copter turns on, there are no lights until a few seconds
 
 i = 0;
 while(i<=10000000):
